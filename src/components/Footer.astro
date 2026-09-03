@@ -1,0 +1,484 @@
+---
+/**
+ * Footer.astro
+ * ─────────────────────────────────────────────────────────────────────
+ * Minimalist, modern, and clean footer for Nuralam Packaging.
+ * Includes:
+ * - Company info & verified credentials (covers #tentang)
+ * - Contact information: Email, Head Marketing, Alamat (covers #kontak)
+ * - Quick category & navigation links
+ * - Head Marketing direct WhatsApp contact card
+ * - Back-to-top smooth scroll
+ */
+
+import { CATEGORIES } from "../data/catalog";
+
+const productCategories = CATEGORIES.filter((c) => c.id !== "all");
+const currentYear = new Date().getFullYear();
+---
+
+<footer class="footer-root" id="kontak" aria-label="Informasi Kontak & Footer">
+  <!-- Anchor for navbar 'Tentang' -->
+  <div id="tentang" class="footer-anchor-tentang" aria-hidden="true"></div>
+
+  <div class="footer-container">
+    <!-- ─── Main Footer Grid ─────────────────────────────────────────── -->
+    <div class="footer-grid">
+      <!-- Column 1: Brand & Profile -->
+      <div class="footer-col footer-col--brand">
+        <a href="/" class="footer-brand" aria-label="Kembali ke atas">
+          <img
+            src="/logo/logo-white.webp"
+            alt="Nuralam Packaging"
+            class="footer-brand__logo"
+            width="32"
+            height="32"
+            loading="lazy"
+          />
+          <div class="footer-brand__text">
+            <span class="footer-brand__title">NURALAM PACKAGING</span>
+            <span class="footer-brand__sub">CV Nuralam Semesta Abadi</span>
+          </div>
+        </a>
+
+        <p class="footer-desc">
+          Supplier &amp; Importir kemasan kosmetik, parfum, skincare, dan botol berkualitas tinggi. Melayani kebutuhan kemasan untuk brand lokal, klinik kecantikan, pabrik maklon, hingga UMKM di seluruh Indonesia.
+        </p>
+
+        <!-- Trust Badges -->
+        <div class="footer-badges">
+          <span class="footer-badge">
+            <svg viewBox="0 0 20 20" fill="currentColor" class="footer-badge__icon" aria-hidden="true">
+              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clip-rule="evenodd" />
+            </svg>
+            <span>Verified Supplier</span>
+          </span>
+          <span class="footer-badge">
+            <svg viewBox="0 0 20 20" fill="currentColor" class="footer-badge__icon" aria-hidden="true">
+              <path d="M6.5 3c-1.051 0-2.093.04-3.125.117A1.49 1.49 0 002 4.607V10.5a.5.5 0 00.5.5h15a.5.5 0 00.5-.5V4.607a1.49 1.49 0 00-1.375-1.49A39.53 39.53 0 0013.5 3h-7z" />
+              <path d="M2 12.5a.5.5 0 00.5.5h15a.5.5 0 00.5-.5V15a2 2 0 01-2 2H4a2 2 0 01-2-2v-2.5z" />
+            </svg>
+            <span>Resmi &amp; Berbadan Hukum</span>
+          </span>
+        </div>
+      </div>
+
+      <!-- Column 2: Kategori Kemasan -->
+      <div class="footer-col">
+        <h4 class="footer-col__title">Kategori Kemasan</h4>
+        <ul class="footer-links" role="list">
+          {
+            productCategories.map((cat) => (
+              <li>
+                <a href="#product" class="footer-link">
+                  {cat.name}
+                </a>
+              </li>
+            ))
+          }
+        </ul>
+      </div>
+
+      <!-- Column 3: Navigasi Cepat -->
+      <div class="footer-col">
+        <h4 class="footer-col__title">Navigasi</h4>
+        <ul class="footer-links" role="list">
+          <li><a href="#" class="footer-link">Beranda</a></li>
+          <li><a href="#product" class="footer-link">Katalog Produk</a></li>
+          <li><a href="#testimoni" class="footer-link">Testimoni &amp; Bukti Kirim</a></li>
+          <li><a href="#kontak" class="footer-link">Kontak &amp; Alamat</a></li>
+          <li><a href="#tentang" class="footer-link">Tentang Kami</a></li>
+        </ul>
+      </div>
+
+      <!-- Column 4: Kontak & Informasi Tambahan -->
+      <div class="footer-col footer-col--contact">
+        <h4 class="footer-col__title">Hubungi Kami</h4>
+
+        <div class="footer-contact-list">
+          <!-- Email -->
+          <a href="mailto:marketing@nuralam.online" class="footer-contact-item" aria-label="Kirim email ke marketing@nuralam.online">
+            <span class="footer-contact-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect width="20" height="16" x="2" y="4" rx="2" />
+                <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
+              </svg>
+            </span>
+            <div class="footer-contact-text">
+              <span class="footer-contact-label">Email Resmi</span>
+              <span class="footer-contact-val">marketing@nuralam.online</span>
+            </div>
+          </a>
+
+          <!-- Head Marketing Phone / WA -->
+          <a
+            href="https://wa.me/6282119371577?text=Halo%20Head%20Marketing%20Nur%20Alam%20Packaging,%20saya%20ingin%20konsultasi%20pemesanan%20kemasan."
+            target="_blank"
+            rel="noopener noreferrer"
+            class="footer-contact-item catalog-btn-wa"
+            aria-label="Hubungi Head Marketing via WhatsApp"
+          >
+            <span class="footer-contact-icon footer-contact-icon--wa" aria-hidden="true">
+              <img src="/logo/whatsapp-icon" alt="" width="18" height="18" />
+            </span>
+            <div class="footer-contact-text">
+              <span class="footer-contact-label">Head Marketing (Rey)</span>
+              <span class="footer-contact-val">0821 1937 1577</span>
+            </div>
+            <span class="footer-online-dot" title="Online"></span>
+          </a>
+
+          <!-- Alamat -->
+          <div class="footer-contact-item footer-contact-item--static">
+            <span class="footer-contact-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0" />
+                <circle cx="12" cy="10" r="3" />
+              </svg>
+            </span>
+            <div class="footer-contact-text">
+              <span class="footer-contact-label">Kantor &amp; Gudang</span>
+              <span class="footer-contact-val">Kp Udik, Bogor, Jawa Barat, Indonesia</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── Bottom Bar ───────────────────────────────────────────────── -->
+    <div class="footer-bottom">
+      <div class="footer-bottom__left">
+        <p class="footer-copyright">
+          &copy; {currentYear} CV Nuralam Semesta Abadi. All rights reserved.
+        </p>
+        <span class="footer-bottom__separator" aria-hidden="true">•</span>
+        <span class="footer-bottom__tag">Supplier &amp; Importir Kemasan Kosmetik Indonesia</span>
+      </div>
+
+      <!-- Back to top button -->
+      <button type="button" class="footer-back-to-top" id="footer-back-to-top" aria-label="Kembali ke atas halaman">
+        <span>Kembali ke atas</span>
+        <svg viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4" aria-hidden="true">
+          <path fill-rule="evenodd" d="M10 17a.75.75 0 01-.75-.75V5.612L5.29 9.77a.75.75 0 01-1.08-1.04l5.25-5.5a.75.75 0 011.08 0l5.25 5.5a.75.75 0 11-1.08 1.04l-3.96-4.158V16.25A.75.75 0 0110 17z" clip-rule="evenodd" />
+        </svg>
+      </button>
+    </div>
+  </div>
+</footer>
+
+<style>
+  /* ─── Footer Root ──────────────────────────────────── */
+  .footer-root {
+    position: relative;
+    background: #0B0D12;
+    color: #E2E4E9;
+    padding: 4.5rem 0 2rem;
+    overflow: hidden;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  .footer-anchor-tentang {
+    position: absolute;
+    top: -90px;
+  }
+
+  .footer-container {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 0 1.5rem;
+  }
+
+  /* ─── Grid ─────────────────────────────────────────── */
+  .footer-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 2.5rem;
+    padding-bottom: 3.5rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  @media (min-width: 640px) {
+    .footer-grid {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 2rem;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .footer-grid {
+      grid-template-columns: 1.4fr 0.8fr 0.8fr 1.2fr;
+      gap: 2.5rem;
+    }
+  }
+
+  /* ─── Brand Column ─────────────────────────────────── */
+  .footer-col--brand {
+    display: flex;
+    flex-direction: column;
+    gap: 1.15rem;
+  }
+
+  .footer-brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    text-decoration: none;
+    color: inherit;
+  }
+
+  .footer-brand__logo {
+    width: 32px;
+    height: 32px;
+    object-fit: contain;
+    flex-shrink: 0;
+  }
+
+  .footer-brand__text {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .footer-brand__title {
+    font-size: 14px;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    color: #ffffff;
+  }
+
+  .footer-brand__sub {
+    font-size: 11px;
+    color: #8C919E;
+    font-weight: 500;
+  }
+
+  .footer-desc {
+    font-size: 13.5px;
+    line-height: 1.65;
+    color: #8C919E;
+    margin: 0;
+    max-width: 380px;
+  }
+
+  .footer-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .footer-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.3rem 0.65rem;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 600;
+    color: #D1D5DB;
+  }
+
+  .footer-badge__icon {
+    width: 13px;
+    height: 13px;
+    color: #25D366;
+  }
+
+  /* ─── Link Columns ─────────────────────────────────── */
+  .footer-col__title {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #ffffff;
+    margin: 0 0 1.15rem;
+  }
+
+  .footer-links {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+  }
+
+  .footer-link {
+    font-size: 13.5px;
+    color: #8C919E;
+    text-decoration: none;
+    transition: color 0.18s ease, transform 0.18s ease;
+    display: inline-block;
+  }
+
+  .footer-link:hover {
+    color: #ffffff;
+    transform: translateX(3px);
+  }
+
+  /* ─── Contact Column ───────────────────────────────── */
+  .footer-contact-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+  }
+
+  .footer-contact-item {
+    position: relative;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 0.75rem 0.9rem;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 12px;
+    text-decoration: none;
+    color: inherit;
+    transition:
+      background 0.2s ease,
+      border-color 0.2s ease,
+      transform 0.2s ease;
+  }
+
+  a.footer-contact-item:hover {
+    background: rgba(255, 255, 255, 0.07);
+    border-color: rgba(255, 255, 255, 0.16);
+    transform: translateY(-2px);
+  }
+
+  .footer-contact-item--static {
+    cursor: default;
+  }
+
+  .footer-contact-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.06);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    color: #E2E4E9;
+  }
+
+  .footer-contact-icon svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  .footer-contact-icon--wa {
+    background: rgba(37, 211, 102, 0.15);
+  }
+
+  .footer-contact-text {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    overflow: hidden;
+  }
+
+  .footer-contact-label {
+    font-size: 10.5px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #8C919E;
+  }
+
+  .footer-contact-val {
+    font-size: 13px;
+    font-weight: 600;
+    color: #ffffff;
+    word-break: break-all;
+  }
+
+  .footer-online-dot {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #25D366;
+    box-shadow: 0 0 6px #25D366;
+  }
+
+  /* ─── Bottom Bar ───────────────────────────────────── */
+  .footer-bottom {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding-top: 1.75rem;
+    font-size: 12px;
+    color: #717684;
+    text-align: center;
+  }
+
+  @media (min-width: 768px) {
+    .footer-bottom {
+      flex-direction: row;
+      text-align: left;
+    }
+  }
+
+  .footer-bottom__left {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+  }
+
+  @media (min-width: 768px) {
+    .footer-bottom__left {
+      justify-content: flex-start;
+    }
+  }
+
+  .footer-copyright {
+    margin: 0;
+  }
+
+  .footer-bottom__separator {
+    color: rgba(255, 255, 255, 0.2);
+  }
+
+  .footer-bottom__tag {
+    color: #8C919E;
+  }
+
+  .footer-back-to-top {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    background: transparent;
+    border: none;
+    color: #8C919E;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 0.4rem 0.6rem;
+    border-radius: 8px;
+    transition: color 0.18s ease, background 0.18s ease;
+  }
+
+  .footer-back-to-top:hover {
+    color: #ffffff;
+    background: rgba(255, 255, 255, 0.05);
+  }
+</style>
+
+<script>
+  (() => {
+    const backToTopBtn = document.getElementById("footer-back-to-top");
+    backToTopBtn?.addEventListener("click", () => {
+      window.scrollTo({
+        top: 0,
+        behavior: "smooth",
+      });
+    });
+  })();
+</script>

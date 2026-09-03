@@ -1,0 +1,412 @@
+---
+
+---
+
+<!--
+  Navbar Component — Floating, Rounded, Gradient Border
+  Height: 64px | Logo: /logo/logo-dark.webp
+-->
+<div class="navbar-root" id="navbar-root">
+  <header class="navbar" id="navbar">
+    <nav class="navbar__inner">
+      <!-- Brand / Logo -->
+      <a href="/" class="navbar__brand" aria-label="Go to homepage">
+        <img
+          src="/logo/logo-dark.webp"
+          alt="Nur Alam Packaging logo"
+          class="navbar__logo-img"
+          width="32"
+          height="32"
+          loading="eager"
+          decoding="async"
+        />
+      </a>
+
+      <!-- Primary Nav Links -->
+      <ul class="navbar__links" role="list">
+        <li><a href="#product" class="navbar__link">Product</a></li>
+        <li><a href="#testimoni" class="navbar__link">Testimoni</a></li>
+        <li><a href="#kontak" class="navbar__link">Kontak</a></li>
+        <li><a href="#tentang" class="navbar__link">Tentang</a></li>
+      </ul>
+
+      <!-- Action Button -->
+      <div class="navbar__actions">
+        <a href="https://wa.me/6287875285840?text=Halo%20Admin%20Nur%20Alam%20Packaging,%20saya%20ingin%20tanya%20produk." target="_blank" rel="noopener noreferrer" class="navbar__btn-wa">
+          <img src="/logo/whatsapp-icon" alt="" class="navbar__btn-wa-icon" width="18" height="18" aria-hidden="true" />
+          Free Tanya
+        </a>
+      </div>
+
+      <!-- Mobile Hamburger -->
+      <button
+        id="navbar-toggle"
+        class="navbar__hamburger"
+        aria-label="Toggle navigation"
+        aria-expanded="false"
+        aria-controls="navbar-mobile"
+      >
+        <span class="navbar__hamburger-bar"></span>
+        <span class="navbar__hamburger-bar"></span>
+        <span class="navbar__hamburger-bar"></span>
+      </button>
+    </nav>
+
+    <!-- Mobile Dropdown -->
+    <div id="navbar-mobile" class="navbar__mobile" hidden>
+      <ul role="list">
+        <li><a href="#product" class="navbar__mobile-link">Product</a></li>
+        <li><a href="#testimoni" class="navbar__mobile-link">Testimoni</a></li>
+        <li><a href="#kontak" class="navbar__mobile-link">Kontak</a></li>
+        <li><a href="#tentang" class="navbar__mobile-link">Tentang</a></li>
+      </ul>
+      <div class="navbar__mobile-actions">
+        <a href="https://wa.me/6287875285840?text=Halo%20Admin%20Nur%20Alam%20Packaging,%20saya%20ingin%20tanya%20produk." target="_blank" rel="noopener noreferrer" class="navbar__btn-wa navbar__btn--block">
+          <img src="/logo/whatsapp-icon" alt="" class="navbar__btn-wa-icon" width="18" height="18" aria-hidden="true" />
+          Free Tanya
+        </a>
+      </div>
+    </div>
+  </header>
+</div>
+
+<style>
+  /* ─── Floating Root ────────────────────────────── */
+  .navbar-root {
+    position: fixed;
+    top: 16px;
+    left: 50%;
+    transform: translateX(-50%) translateZ(0);
+    width: calc(100% - 48px);
+    max-width: 1160px;
+    z-index: 100;
+    transition:
+      transform 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+      opacity 0.25s ease;
+    will-change: transform, opacity;
+    contain: layout paint;
+  }
+
+  .navbar-root.is-hidden {
+    transform: translateX(-50%) translateY(-130%) translateZ(0);
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  /* ─── Navbar Shell (High-Performance Frosted Glass) ── */
+  .navbar {
+    position: relative;
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.72);
+    -webkit-backdrop-filter: blur(16px) saturate(180%);
+    backdrop-filter: blur(16px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.75);
+    box-shadow:
+      0 4px 20px -2px rgba(0, 0, 0, 0.05),
+      0 1px 3px 0 rgba(0, 0, 0, 0.03),
+      inset 0 1px 1px 0 rgba(255, 255, 255, 0.9);
+    transition:
+      background 0.25s ease,
+      box-shadow 0.25s ease;
+    transform: translateZ(0);
+  }
+
+  .navbar.is-scrolled {
+    background: rgba(255, 255, 255, 0.84);
+    box-shadow:
+      0 8px 32px -4px rgba(0, 0, 0, 0.08),
+      0 2px 6px 0 rgba(0, 0, 0, 0.04),
+      inset 0 1px 1px 0 rgba(255, 255, 255, 0.95);
+  }
+
+  /* ─── Inner Layout ─────────────────────────────── */
+  .navbar__inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 1.5rem;
+    height: 64px;
+    gap: 1rem;
+  }
+
+  /* ─── Brand ────────────────────────────────────── */
+  .navbar__brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+    text-decoration: none;
+    flex-shrink: 0;
+    transition: opacity 0.15s ease;
+  }
+  .navbar__brand:hover {
+    opacity: 0.65;
+  }
+
+  .navbar__logo-img {
+    display: block;
+    width: 32px;
+    height: 32px;
+    object-fit: contain;
+    flex-shrink: 0;
+  }
+
+  /* ─── Nav Links ────────────────────────────────── */
+  .navbar__links {
+    display: flex;
+    align-items: center;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    gap: 2px;
+  }
+
+  .navbar__link {
+    display: inline-block;
+    padding: 0.4rem 0.8rem;
+    border-radius: 9px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #6e6e73;
+    text-decoration: none;
+    white-space: nowrap;
+    transition:
+      color 0.15s ease,
+      background 0.15s ease;
+  }
+  .navbar__link:hover {
+    color: #1d1d1f;
+    background: rgba(0, 0, 0, 0.05);
+  }
+
+  /* ─── Action Buttons ───────────────────────────── */
+  .navbar__actions {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    flex-shrink: 0;
+  }
+
+  /* ─── WhatsApp CTA Button ─────────────────────── */
+  .navbar__btn-wa {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.48rem 1.15rem 0.48rem 0.85rem;
+    border-radius: 980px;
+    font-size: 13.5px;
+    font-weight: 600;
+    background: linear-gradient(135deg, #0EA85A 0%, #25D366 45%, #5BE07A 100%);
+    color: #fff;
+    text-decoration: none;
+    white-space: nowrap;
+    letter-spacing: -0.01em;
+    box-shadow: 0 1px 6px rgba(37, 211, 102, 0.22);
+    transition:
+      filter 0.2s ease,
+      box-shadow 0.2s ease,
+      transform 0.1s ease;
+  }
+  .navbar__btn-wa:hover {
+    filter: brightness(1.07) saturate(1.1);
+    box-shadow: 0 4px 18px rgba(37, 211, 102, 0.42);
+  }
+  .navbar__btn-wa:active {
+    transform: scale(0.97);
+    filter: brightness(0.96);
+  }
+
+  .navbar__btn-wa-icon {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+    object-fit: contain;
+    border-radius: 4px;
+  }
+
+  /* ─── Hamburger ────────────────────────────────── */
+  .navbar__hamburger {
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    gap: 5px;
+    width: 36px;
+    height: 36px;
+    padding: 6px;
+    border: none;
+    border-radius: 9px;
+    background: transparent;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: background 0.15s ease;
+  }
+  .navbar__hamburger:hover {
+    background: rgba(0, 0, 0, 0.06);
+  }
+
+  .navbar__hamburger-bar {
+    display: block;
+    width: 100%;
+    height: 1.5px;
+    border-radius: 2px;
+    background: #1d1d1f;
+    transform-origin: center;
+    transition:
+      transform 0.25s ease,
+      opacity 0.2s ease;
+  }
+
+  .navbar__hamburger[aria-expanded="true"] .navbar__hamburger-bar:nth-child(1) {
+    transform: translateY(6.5px) rotate(45deg);
+  }
+  .navbar__hamburger[aria-expanded="true"] .navbar__hamburger-bar:nth-child(2) {
+    opacity: 0;
+    transform: scaleX(0);
+  }
+  .navbar__hamburger[aria-expanded="true"] .navbar__hamburger-bar:nth-child(3) {
+    transform: translateY(-6.5px) rotate(-45deg);
+  }
+
+  /* ─── Mobile Menu ──────────────────────────────── */
+  .navbar__mobile {
+    padding: 0.5rem 1.5rem 1.125rem;
+    border-top: 1px solid rgba(0, 0, 0, 0.06);
+  }
+  .navbar__mobile[hidden] {
+    display: none;
+  }
+
+  .navbar__mobile ul {
+    list-style: none;
+    margin: 0 0 0.625rem;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .navbar__mobile-link {
+    display: block;
+    padding: 0.6rem 0.5rem;
+    font-size: 15px;
+    font-weight: 500;
+    color: #1d1d1f;
+    text-decoration: none;
+    border-radius: 9px;
+    transition: background 0.15s ease;
+  }
+  .navbar__mobile-link:hover {
+    background: rgba(0, 0, 0, 0.05);
+  }
+
+  .navbar__mobile-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid rgba(0, 0, 0, 0.06);
+  }
+  .navbar__mobile-actions .navbar__btn-wa {
+    border-radius: 12px;
+    padding: 0.7rem 1rem;
+    font-size: 15px;
+    justify-content: center;
+  }
+
+  /* ─── Responsive ───────────────────────────────── */
+  @media (max-width: 767px) {
+    .navbar-root {
+      top: 10px;
+      width: calc(100% - 24px);
+    }
+    .navbar {
+      border-radius: 14px;
+    }
+    .navbar__inner {
+      height: 56px;
+      padding: 0 1.125rem;
+    }
+    .navbar__links {
+      display: none;
+    }
+    .navbar__actions {
+      display: none;
+    }
+    .navbar__hamburger {
+      display: flex;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .navbar__logo-text {
+      display: none;
+    }
+  }
+</style>
+
+<script>
+  const toggle = document.getElementById("navbar-toggle") as HTMLButtonElement;
+  const menu = document.getElementById("navbar-mobile") as HTMLElement;
+  const navbar = document.getElementById("navbar") as HTMLElement;
+  const navbarRoot = document.getElementById("navbar-root") as HTMLElement;
+
+  // Mobile menu toggle
+  toggle?.addEventListener("click", () => {
+    const open = toggle.getAttribute("aria-expanded") === "true";
+    toggle.setAttribute("aria-expanded", String(!open));
+    menu.hidden = open;
+  });
+
+  menu?.querySelectorAll("a").forEach((link) => {
+    link.addEventListener("click", () => {
+      toggle?.setAttribute("aria-expanded", "false");
+      if (menu) menu.hidden = true;
+    });
+  });
+
+  // Scroll hide / show on stop logic with rAF ticking (60/120fps smooth)
+  let scrollTimeout: ReturnType<typeof setTimeout> | null = null;
+  let isTicking = false;
+
+  const updateNavbarOnScroll = () => {
+    const currentScrollY = window.scrollY;
+    const isMobileMenuOpen = toggle?.getAttribute("aria-expanded") === "true";
+
+    // Toggle scroll shadow
+    navbar?.classList.toggle("is-scrolled", currentScrollY > 12);
+
+    // Keep navbar visible if mobile dropdown is open
+    if (isMobileMenuOpen) {
+      navbarRoot?.classList.remove("is-hidden");
+      return;
+    }
+
+    // While actively scrolling and past threshold -> slide up & hide
+    if (currentScrollY > 40) {
+      navbarRoot?.classList.add("is-hidden");
+    } else {
+      navbarRoot?.classList.remove("is-hidden");
+    }
+
+    // Reset debounce timer
+    if (scrollTimeout) {
+      clearTimeout(scrollTimeout);
+    }
+
+    // When scrolling stops (debounced) -> slide down & show
+    scrollTimeout = setTimeout(() => {
+      navbarRoot?.classList.remove("is-hidden");
+    }, 180);
+  };
+
+  const handleScroll = () => {
+    if (!isTicking) {
+      window.requestAnimationFrame(() => {
+        updateNavbarOnScroll();
+        isTicking = false;
+      });
+      isTicking = true;
+    }
+  };
+
+  window.addEventListener("scroll", handleScroll, { passive: true });
+</script>

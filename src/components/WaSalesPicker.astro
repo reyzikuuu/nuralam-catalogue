@@ -1,0 +1,473 @@
+---
+/**
+ * WaSalesPicker.astro
+ * ─────────────────────────────────────────────────────────────────────
+ * A popup bottom-sheet that shows 7 sales agents when any WA button
+ * is clicked. Intercepts clicks site-wide via event delegation.
+ * Each agent's link is dynamically updated with the page context.
+ */
+
+interface SalesAgent {
+  name: string;
+  role: string;
+  phone: string; // 62xxx format, no spaces/dashes
+  photo: string; // path relative to /public
+}
+
+const SALES_TEAM: SalesAgent[] = [
+  { name: "Husni",       role: "Marketing", phone: "6287875285840", photo: "/profile-marketing/default-profile.png" },
+  { name: "Rey",         role: "Marketing", phone: "6282119371577", photo: "/profile-marketing/rey-profile.webp" },
+  { name: "Abdul Jabar", role: "Marketing", phone: "6287726690175", photo: "/profile-marketing/default-profile.png" },
+  { name: "HIB",         role: "Marketing", phone: "6285875004669", photo: "/profile-marketing/default-profile.png" },
+  { name: "Iren A",      role: "Marketing", phone: "6287816421287", photo: "/profile-marketing/default-profile.png" },
+  { name: "Arul",        role: "Marketing", phone: "6281214495427", photo: "/profile-marketing/default-profile.png" },
+  { name: "Hilmi",       role: "Marketing", phone: "6282126355792", photo: "/profile-marketing/default-profile.png" },
+];
+---
+
+<!-- ─── Sales Picker Overlay ─────────────────────────────────────── -->
+<div
+  id="wa-picker-overlay"
+  class="wa-picker-overlay"
+  aria-hidden="true"
+  role="dialog"
+  aria-modal="true"
+  aria-label="Pilih Sales Marketing"
+>
+  <div class="wa-picker-backdrop" id="wa-picker-backdrop"></div>
+
+  <div class="wa-picker-popup" id="wa-picker-popup" role="document">
+    <!-- Handle bar (mobile only) -->
+    <div class="wa-picker-handle" aria-hidden="true"></div>
+
+    <!-- Popup top-bar: title + close -->
+    <div class="wa-picker-topbar">
+      <span class="wa-picker-topbar__title">Official Marketing Nuralam Packaging</span>
+      <button type="button" class="wa-picker-close" id="wa-picker-close" aria-label="Tutup">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Agent List -->
+    <ul class="wa-picker-list" role="list">
+      {SALES_TEAM.map((agent, i) => (
+        <li class="wa-picker-item" style={`--i: ${i};`}>
+          <a
+            href={`https://wa.me/${agent.phone}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            class="wa-picker-agent"
+            data-phone={agent.phone}
+            data-name={agent.name}
+            aria-label={`Chat dengan ${agent.name}`}
+          >
+            <!-- Avatar with online pulse badge -->
+            <span class="wa-agent-avatar-wrap" aria-hidden="true">
+              <img
+                src={agent.photo}
+                alt={agent.name}
+                class="wa-agent-avatar"
+                width="44"
+                height="44"
+                loading="lazy"
+                onerror="this.src='/profile-marketing/default-profile.png'"
+              />
+              <span class="wa-agent-online">
+                <span class="wa-agent-online__pulse"></span>
+              </span>
+            </span>
+
+            <!-- Info -->
+            <span class="wa-agent-info">
+              <span class="wa-agent-name">
+                {agent.name}
+                <img
+                  src="/verify-profile-name.png"
+                  alt="Verified"
+                  class="wa-agent-verified"
+                  width="14"
+                  height="14"
+                  aria-label="Akun terverifikasi"
+                />
+              </span>
+              <span class="wa-agent-status">
+                <img src="/icon-marketing.png" alt="" class="wa-agent-status__icon" width="12" height="12" aria-hidden="true" />
+                {agent.role}
+              </span>
+            </span>
+
+            <!-- CTA -->
+            <span class="wa-agent-cta" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+              </svg>
+              Chat
+            </span>
+          </a>
+        </li>
+      ))}
+    </ul>
+  </div>
+</div>
+
+<style>
+  /* ─── Overlay ─────────────────────────────────────── */
+  .wa-picker-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    pointer-events: none;
+    visibility: hidden;
+  }
+
+  .wa-picker-overlay.is-open {
+    pointer-events: all;
+    visibility: visible;
+  }
+
+  /* ─── Backdrop ────────────────────────────────────── */
+  .wa-picker-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0);
+    backdrop-filter: blur(0px);
+    -webkit-backdrop-filter: blur(0px);
+    transition:
+      background 0.28s ease,
+      backdrop-filter 0.28s ease;
+    cursor: pointer;
+  }
+
+  .wa-picker-overlay.is-open .wa-picker-backdrop {
+    background: rgba(0, 0, 0, 0.35);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+  }
+
+  /* ─── Popup Card ──────────────────────────────────── */
+  .wa-picker-popup {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    max-width: 400px;
+    background: #ffffff;
+    border-radius: 20px 20px 0 0;
+    box-shadow:
+      0 -8px 40px rgba(0, 0, 0, 0.1),
+      0 -1px 3px rgba(0, 0, 0, 0.04);
+    transform: translateY(100%);
+    transition: transform 0.32s cubic-bezier(0.16, 1, 0.3, 1);
+    overflow: hidden;
+    padding-bottom: env(safe-area-inset-bottom, 4px);
+  }
+
+  .wa-picker-overlay.is-open .wa-picker-popup {
+    transform: translateY(0);
+  }
+
+  @media (min-width: 540px) {
+    .wa-picker-overlay {
+      align-items: center;
+      padding: 1.5rem;
+    }
+    .wa-picker-popup {
+      border-radius: 20px;
+      transform: translateY(16px) scale(0.97);
+      opacity: 0;
+      transition:
+        transform 0.26s cubic-bezier(0.16, 1, 0.3, 1),
+        opacity 0.2s ease;
+    }
+    .wa-picker-overlay.is-open .wa-picker-popup {
+      transform: translateY(0) scale(1);
+      opacity: 1;
+    }
+  }
+
+  /* ─── Handle ──────────────────────────────────────── */
+  .wa-picker-handle {
+    width: 34px;
+    height: 4px;
+    background: rgba(0, 0, 0, 0.1);
+    border-radius: 999px;
+    margin: 10px auto 0;
+  }
+  @media (min-width: 540px) { .wa-picker-handle { display: none; } }
+
+  /* ─── Top bar ─────────────────────────────────────── */
+  .wa-picker-topbar {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.85rem 1rem 0.45rem;
+  }
+
+  .wa-picker-topbar__title {
+    font-size: 11px;
+    font-weight: 700;
+    color: #6E6E73;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    text-align: center;
+  }
+
+  .wa-picker-close {
+    position: absolute;
+    right: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 26px;
+    height: 26px;
+    border: none;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.06);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #6E6E73;
+    padding: 0;
+    transition: background 0.14s, color 0.14s;
+  }
+  .wa-picker-close:hover { background: rgba(0,0,0,0.12); color: #1D1D1F; }
+  .wa-picker-close svg { width: 12px; height: 12px; }
+
+  /* ─── Sales List ──────────────────────────────────── */
+  .wa-picker-list {
+    list-style: none;
+    margin: 0;
+    padding: 0.25rem 0.65rem 0.75rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    max-height: 62vh;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+
+  /* ─── Staggered entrance ──────────────────────────── */
+  .wa-picker-item {
+    opacity: 0;
+    transform: translateY(6px);
+    transition:
+      opacity 0.18s ease,
+      transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .wa-picker-overlay.is-open .wa-picker-item {
+    opacity: 1;
+    transform: translateY(0);
+    transition-delay: calc(0.06s + var(--i) * 0.035s);
+  }
+
+  /* ─── Agent Row ───────────────────────────────────── */
+  .wa-picker-agent {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.6rem 0.5rem;
+    border-radius: 14px;
+    text-decoration: none;
+    transition: background 0.12s ease;
+  }
+  .wa-picker-agent:hover,
+  .wa-picker-agent:focus-visible {
+    background: rgba(37, 211, 102, 0.07);
+    outline: none;
+  }
+
+  /* ─── Avatar + Online Badge ───────────────────────── */
+  .wa-agent-avatar-wrap {
+    position: relative;
+    flex-shrink: 0;
+    width: 44px;
+    height: 44px;
+  }
+
+  .wa-agent-avatar {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    object-fit: cover;
+    background: rgba(0, 0, 0, 0.05);
+    display: block;
+    flex-shrink: 0;
+  }
+
+  /* Online badge — small green dot bottom-right of avatar */
+  .wa-agent-online {
+    position: absolute;
+    bottom: 1px;
+    right: 1px;
+    width: 13px;
+    height: 13px;
+    border-radius: 50%;
+    background: #25D366;
+    border: 2px solid #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* Ripple pulse ring */
+  .wa-agent-online__pulse {
+    position: absolute;
+    inset: -3px;
+    border-radius: 50%;
+    background: #25D366;
+    opacity: 0.5;
+    animation: wa-online-pulse 1.8s ease-out infinite;
+  }
+
+  @keyframes wa-online-pulse {
+    0%   { transform: scale(1);   opacity: 0.55; }
+    70%  { transform: scale(2.2); opacity: 0; }
+    100% { transform: scale(2.2); opacity: 0; }
+  }
+
+  /* ─── Info ────────────────────────────────────────── */
+  .wa-agent-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    flex: 1;
+    min-width: 0;
+  }
+
+  .wa-agent-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: #1D1D1F;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  /* Verified badge */
+  .wa-agent-verified {
+    width: 14px;
+    height: 14px;
+    object-fit: contain;
+    flex-shrink: 0;
+    display: inline-block;
+    vertical-align: middle;
+    transition: transform 0.2s ease;
+  }
+
+  .wa-picker-agent:hover .wa-agent-verified {
+    transform: scale(1.15);
+  }
+
+  /* Online status row */
+  .wa-agent-status {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11.5px;
+    color: #6E6E73;
+  }
+
+  .wa-agent-status__icon {
+    width: 12px;
+    height: 12px;
+    object-fit: contain;
+    flex-shrink: 0;
+    opacity: 0.75;
+  }
+
+  /* ─── CTA Button ──────────────────────────────────── */
+  .wa-agent-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.35rem 0.75rem;
+    border-radius: 999px;
+    background: #25D366;
+    color: #ffffff;
+    font-size: 12px;
+    font-weight: 700;
+    flex-shrink: 0;
+    transition: background 0.13s, transform 0.14s;
+  }
+  .wa-agent-cta svg { width: 12px; height: 12px; }
+  .wa-picker-agent:hover .wa-agent-cta {
+    background: #1ebe5a;
+    transform: scale(1.05);
+  }
+</style>
+
+<script>
+  (() => {
+    const overlay = document.getElementById("wa-picker-overlay") as HTMLElement;
+    const backdrop = document.getElementById("wa-picker-backdrop") as HTMLElement;
+    const closeBtn = document.getElementById("wa-picker-close") as HTMLButtonElement;
+
+    // ─── Open / Close helpers ─────────────────────────────────────────
+    function openPicker(contextMsg: string = "") {
+      // Update each agent link with the context message
+      overlay.querySelectorAll<HTMLAnchorElement>(".wa-picker-agent").forEach((link) => {
+        const phone = link.dataset.phone ?? "";
+        const name = link.dataset.name ?? "";
+        const greeting = contextMsg
+          ? `Halo kak ${name}, saya ingin tanya produk katalog:\n_${contextMsg}_\n\nMohon info selengkapnya, terima kasih! 🙏`
+          : `Halo kak ${name}, saya ingin konsultasi produk kemasan Nuralam Packaging. Terima kasih! 🙏`;
+        link.href = `https://wa.me/${phone}?text=${encodeURIComponent(greeting)}`;
+      });
+
+      overlay.setAttribute("aria-hidden", "false");
+      overlay.classList.add("is-open");
+      document.body.style.overflow = "hidden";
+      // Defer focus so animation is already running
+      requestAnimationFrame(() => closeBtn?.focus());
+    }
+
+    function closePicker() {
+      overlay.classList.remove("is-open");
+      overlay.setAttribute("aria-hidden", "true");
+      document.body.style.overflow = "";
+    }
+
+    // ─── Event Listeners ──────────────────────────────────────────────
+    backdrop?.addEventListener("click", closePicker);
+    closeBtn?.addEventListener("click", closePicker);
+
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && overlay.classList.contains("is-open")) {
+        closePicker();
+      }
+    });
+
+    // ─── Intercept ALL WA buttons on the page ─────────────────────────
+    document.addEventListener("click", (e) => {
+      const target = (e.target as HTMLElement).closest<HTMLAnchorElement>(
+        "a.catalog-btn-wa, a.hero__btn--wa, a.navbar__btn-wa, [data-wa-picker]"
+      );
+      if (!target) return;
+
+      e.preventDefault();
+      e.stopPropagation();
+
+      // Extract message context from the WA URL already on the button
+      let msg = "";
+      try {
+        const url = new URL(target.href);
+        msg = decodeURIComponent(url.searchParams.get("text") ?? "");
+      } catch (_) { /* silent */ }
+
+      openPicker(msg);
+    }, true); // capture phase so we catch before any other handler
+
+    // Expose globally for external calls
+    (window as any).openWaPicker  = openPicker;
+    (window as any).closeWaPicker = closePicker;
+  })();
+</script>

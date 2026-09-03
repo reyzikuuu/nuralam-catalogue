@@ -1,0 +1,24 @@
+---
+import Navbar from "@components/Navbar.astro";
+import Hero from "@components/Hero.astro";
+import CatalogViewer from "@components/CatalogViewer.astro";
+import Testimonials from "@components/Testimonials.astro";
+import Footer from "@components/Footer.astro";
+import WaSalesPicker from "@components/WaSalesPicker.astro";
+import Layout from "@layouts/Layout.astro";
+---
+
+<Layout title="Nuralam Packaging - Katalog Kemasan Kosmetik 2026">
+  <Navbar />
+
+  <main class="flex-1 pt-25 md:pt-30">
+    <Hero />
+    <CatalogViewer />
+    <Testimonials />
+  </main>
+
+  <Footer />
+
+  <!-- WA Sales Picker: global overlay, intercepts all WA button clicks -->
+  <WaSalesPicker />
+</Layout>

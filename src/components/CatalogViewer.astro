@@ -1,0 +1,1809 @@
+---
+import {
+  CATEGORIES,
+  CATALOG_PAGES,
+  CLOUD_NAME,
+  ROOT_FOLDER,
+  WA_NUMBER,
+  getCloudinaryUrl,
+  getWhatsAppCatalogLink,
+} from "../data/catalog";
+---
+
+<section class="catalog-section" id="product" aria-label="Katalog Produk">
+  <div class="catalog-container">
+    <!-- Category Pill Filter Tabs -->
+    <div class="category-tabs-wrapper">
+      <div class="category-tabs" id="category-tabs" role="tablist">
+        {
+          CATEGORIES.map((cat) => {
+            const count =
+              cat.id === "all"
+                ? CATALOG_PAGES.length
+                : CATALOG_PAGES.filter((p) => p.category === cat.id).length;
+            return (
+              <button
+                type="button"
+                role="tab"
+                class={`category-tab ${cat.id === "all" ? "is-active" : ""}`}
+                data-category={cat.id}
+                aria-selected={cat.id === "all" ? "true" : "false"}
+              >
+                <span class="category-tab__name">{cat.name}</span>
+                <span class="category-tab__badge">{count}</span>
+              </button>
+            );
+          })
+        }
+      </div>
+    </div>
+
+    <!-- Control Toolbar (View Mode, Page Jumper, Zoom) -->
+    <div class="catalog-toolbar">
+      <div class="catalog-toolbar__left">
+        <!-- Page Indicator / Jumper -->
+        <div class="page-jumper">
+          <label for="page-select" class="page-jumper__label">Hal:</label>
+          <div class="page-jumper__input-wrap">
+            <select id="page-select" class="page-jumper__select" aria-label="Pilih nomor halaman">
+              {
+                CATALOG_PAGES.map((page) => (
+                  <option value={page.pageNumber}>
+                    Hal {page.pageNumber} — {page.title}
+                  </option>
+                ))
+              }
+            </select>
+          </div>
+          <span class="page-jumper__total">dari {CATALOG_PAGES.length}</span>
+        </div>
+      </div>
+
+      <div class="catalog-toolbar__right">
+        <!-- View Mode Switcher -->
+        <div class="view-mode-toggle" role="group" aria-label="Tampilan Katalog">
+          <button
+            type="button"
+            class="view-mode-btn is-active"
+            id="btn-mode-reader"
+            title="Mode Baca Fokus"
+          >
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" class="view-mode-btn__icon">
+              <path d="M4 4h12v12H4z" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M4 8h12M8 4v12" stroke-width="1.75"/>
+            </svg>
+            <span class="view-mode-btn__text">Fokus</span>
+          </button>
+          <button
+            type="button"
+            class="view-mode-btn"
+            id="btn-mode-grid"
+            title="Mode Grid Semua Halaman"
+          >
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" class="view-mode-btn__icon">
+              <rect x="3" y="3" width="5.5" height="5.5" rx="1" stroke-width="1.75"/>
+              <rect x="11.5" y="3" width="5.5" height="5.5" rx="1" stroke-width="1.75"/>
+              <rect x="3" y="11.5" width="5.5" height="5.5" rx="1" stroke-width="1.75"/>
+              <rect x="11.5" y="11.5" width="5.5" height="5.5" rx="1" stroke-width="1.75"/>
+            </svg>
+            <span class="view-mode-btn__text">Grid ({CATALOG_PAGES.length})</span>
+          </button>
+        </div>
+
+        <!-- Fullscreen / Zoom Button -->
+        <button
+          type="button"
+          class="btn-zoom-trigger"
+          id="btn-open-zoom"
+          title="Perbesar / Fullscreen (Z)"
+        >
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" class="btn-zoom-trigger__icon">
+            <path d="M8.5 3.5h-5v5M11.5 3.5h5v5M8.5 16.5h-5v-5M11.5 16.5h5v-5" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <span class="btn-zoom-trigger__text">Zoom HD</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- ═════════════════════════════════════════════════════════════ -->
+    <!-- VIEW 1: FOCUS READER (MAIN) -->
+    <!-- ═════════════════════════════════════════════════════════════ -->
+    <div class="reader-view" id="reader-view">
+      <div class="reader-stage">
+        <!-- Prev Button -->
+        <button
+          type="button"
+          class="reader-nav-btn reader-nav-btn--prev"
+          id="btn-prev-page"
+          aria-label="Halaman Sebelumnya (Panah Kiri)"
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="15 18 9 12 15 6"></polyline>
+          </svg>
+        </button>
+
+        <!-- Main A4 Card Container -->
+        <div class="reader-card-wrapper" id="reader-card-wrapper">
+          <div class="reader-card" id="reader-card" tabindex="0" role="button" aria-label="Klik untuk perbesar halaman ini">
+            <!-- Loading indicator -->
+            <div class="reader-card__loader" id="card-loader">
+              <div class="spinner"></div>
+            </div>
+
+            <!-- Active Page Image -->
+            <img
+              id="active-page-img"
+              src={getCloudinaryUrl(CATALOG_PAGES[0]?.publicId, "reader")}
+              alt="Halaman Katalog 1 - CV Nuralam Semesta Abadi"
+              class="reader-card__img"
+              width="1200"
+              height="1697"
+              decoding="async"
+              loading="eager"
+              fetchpriority="high"
+            />
+
+            <!-- Hover Hint Overlay -->
+            <div class="reader-card__overlay">
+              <div class="reader-card__hint">
+                <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" class="w-5 h-5">
+                  <circle cx="9" cy="9" r="6"/>
+                  <path d="M13.5 13.5l4 4M9 7v4M7 9h4"/>
+                </svg>
+                <span>Klik untuk Zoom Fullscreen</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Next Button -->
+        <button
+          type="button"
+          class="reader-nav-btn reader-nav-btn--next"
+          id="btn-next-page"
+          aria-label="Halaman Selanjutnya (Panah Kanan)"
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="9 18 15 12 9 6"></polyline>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Action & WhatsApp Conversion Bar -->
+      <div class="reader-actions">
+        <div class="reader-info">
+          <span class="reader-info__tag" id="current-category-tag">Airless Bottle</span>
+          <span class="reader-info__title" id="current-page-title">Halaman 1 dari {CATALOG_PAGES.length}</span>
+        </div>
+
+        <div class="reader-cta-group">
+          <!-- Dynamic WhatsApp Button -->
+          <a
+            href={getWhatsAppCatalogLink(1, CATALOG_PAGES[0].title)}
+            target="_blank"
+            rel="noopener noreferrer"
+            class="catalog-btn-wa"
+            id="btn-catalog-wa"
+            aria-label="Tanya produk di halaman ini via WhatsApp"
+          >
+            <img src="/logo/whatsapp-icon" alt="" class="catalog-btn-wa__icon" width="20" height="20" aria-hidden="true" />
+            <span id="wa-btn-label">Tanya Produk Halaman 1</span>
+          </a>
+
+          <!-- Quick Zoom Button on Mobile -->
+          <button
+            type="button"
+            class="catalog-btn-zoom-mobile"
+            id="btn-zoom-mobile"
+          >
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4">
+              <circle cx="9" cy="9" r="6"/>
+              <path d="M13.5 13.5l4 4M9 7v4M7 9h4"/>
+            </svg>
+            <span>Zoom</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Thumbnail Strip Carousel -->
+      <div class="thumbnail-strip-container">
+        <div class="thumbnail-strip-header">
+          <span class="thumbnail-strip-title">Navigasi Cepat (Thumbnail)</span>
+          <span class="thumbnail-strip-hint">Geser untuk pilih halaman</span>
+        </div>
+        <div class="thumbnail-strip" id="thumbnail-strip" role="tablist">
+          {
+            CATALOG_PAGES.map((page, idx) => (
+              <button
+                type="button"
+                class={`thumb-item ${idx === 0 ? "is-active" : ""}`}
+                data-page={page.pageNumber}
+                data-category={page.category}
+                id={`thumb-${page.pageNumber}`}
+                role="tab"
+                aria-selected={idx === 0 ? "true" : "false"}
+                aria-label={`Buka halaman ${page.pageNumber}`}
+              >
+                <div class="thumb-item__img-wrap">
+                  <img
+                    src={getCloudinaryUrl(page.publicId, "thumb")}
+                    alt={`Thumb ${page.pageNumber}`}
+                    class="thumb-item__img"
+                    loading="lazy"
+                    decoding="async"
+                    width="120"
+                    height="170"
+                  />
+                  <span class="thumb-item__badge">{page.pageNumber}</span>
+                </div>
+              </button>
+            ))
+          }
+        </div>
+      </div>
+    </div>
+
+    <!-- ═════════════════════════════════════════════════════════════ -->
+    <!-- VIEW 2: GRID OVERVIEW (ALL 62 PAGES) -->
+    <!-- ═════════════════════════════════════════════════════════════ -->
+    <div class="grid-view" id="grid-view" hidden>
+      <div class="catalog-grid" id="catalog-grid">
+        {
+          CATALOG_PAGES.map((page) => (
+            <div
+              class="grid-card"
+              data-page={page.pageNumber}
+              data-category={page.category}
+            >
+              <div class="grid-card__img-wrap">
+                <img
+                  src={getCloudinaryUrl(page.publicId, "grid")}
+                  alt={`Katalog Halaman ${page.pageNumber}`}
+                  class="grid-card__img"
+                  loading="lazy"
+                  decoding="async"
+                  width="400"
+                  height="566"
+                />
+                <div class="grid-card__overlay">
+                  <button type="button" class="grid-card__btn">
+                    <span>Lihat Halaman Ini</span>
+                  </button>
+                </div>
+              </div>
+              <div class="grid-card__meta">
+                <span class="grid-card__number">Hal {page.pageNumber}</span>
+                <span class="grid-card__category">{page.title}</span>
+              </div>
+            </div>
+          ))
+        }
+      </div>
+    </div>
+  </div>
+
+  <!-- ═════════════════════════════════════════════════════════════ -->
+  <!-- HIGH-RES LIGHTBOX MODAL (PINCH-TO-ZOOM / PAN) -->
+  <!-- ═════════════════════════════════════════════════════════════ -->
+  <div class="lightbox-modal" id="lightbox-modal" hidden aria-hidden="true" role="dialog">
+    <div class="lightbox-backdrop" id="lightbox-backdrop"></div>
+    
+    <!-- Lightbox Toolbar -->
+    <div class="lightbox-toolbar">
+      <div class="lightbox-toolbar__info">
+        <span id="lightbox-page-num">Halaman 1</span>
+        <span class="lightbox-toolbar__sep">•</span>
+        <span id="lightbox-page-cat">Airless Bottle</span>
+      </div>
+
+      <div class="lightbox-toolbar__controls">
+        <button type="button" class="lightbox-ctrl-btn" id="btn-zoom-in" title="Perbesar (+)">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="9" cy="9" r="6"/>
+            <path d="M13.5 13.5l4 4M9 7v4M7 9h4"/>
+          </svg>
+        </button>
+        <button type="button" class="lightbox-ctrl-btn" id="btn-zoom-out" title="Perkecil (-)">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="9" cy="9" r="6"/>
+            <path d="M13.5 13.5l4 4M7 9h4"/>
+          </svg>
+        </button>
+        <button type="button" class="lightbox-ctrl-btn" id="btn-zoom-reset" title="Reset Ukuran">
+          100%
+        </button>
+        <button type="button" class="lightbox-ctrl-btn lightbox-ctrl-btn--close" id="btn-close-lightbox" title="Tutup (Esc)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Lightbox Main Stage -->
+    <div class="lightbox-stage" id="lightbox-stage">
+      <div class="lightbox-img-wrapper" id="lightbox-img-wrapper">
+        <img
+          id="lightbox-img"
+          src=""
+          alt="Zoom Halaman Katalog"
+          class="lightbox-img"
+          draggable="false"
+        />
+      </div>
+
+      <!-- Lightbox Prev / Next Buttons -->
+      <button type="button" class="lightbox-nav-btn lightbox-nav-btn--prev" id="btn-lightbox-prev" aria-label="Halaman Sebelumnya">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+          <polyline points="15 18 9 12 15 6"></polyline>
+        </svg>
+      </button>
+      <button type="button" class="lightbox-nav-btn lightbox-nav-btn--next" id="btn-lightbox-next" aria-label="Halaman Selanjutnya">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+          <polyline points="9 18 15 12 9 6"></polyline>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Lightbox Bottom WA Bar -->
+    <div class="lightbox-bottom-bar">
+      <a
+        href="#"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="catalog-btn-wa catalog-btn-wa--modal"
+        id="btn-lightbox-wa"
+      >
+        <img src="/logo/whatsapp-icon" alt="" class="catalog-btn-wa__icon" width="18" height="18" />
+        <span id="lightbox-wa-text">Konsultasi Produk Ini di WhatsApp</span>
+      </a>
+    </div>
+  </div>
+</section>
+
+<style>
+  /* ─── Section Setup ─────────────────────────────────── */
+  .catalog-section {
+    position: relative;
+    width: 100%;
+    background-color: var(--color-background);
+    padding: 1rem 1.25rem 5rem;
+    overflow: hidden;
+  }
+
+  .catalog-container {
+    max-width: 1180px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  /* ─── Category Filter Tabs ─────────────────────────── */
+  .category-tabs-wrapper {
+    width: 100%;
+    overflow-x: auto;
+    padding-bottom: 0.5rem;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .category-tabs-wrapper::-webkit-scrollbar {
+    display: none;
+  }
+
+  .category-tabs {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.35rem;
+    background: rgba(0, 0, 0, 0.04);
+    border-radius: 999px;
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    margin: 0 auto;
+  }
+
+  .category-tab {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.45rem 1rem;
+    border-radius: 999px;
+    font-size: 13.5px;
+    font-weight: 600;
+    color: #6E6E73;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .category-tab:hover {
+    color: #1D1D1F;
+    background: rgba(255, 255, 255, 0.6);
+  }
+
+  .category-tab.is-active {
+    color: #1D1D1F;
+    background: #FFFFFF;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.04);
+  }
+
+  .category-tab__badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 0.1rem 0.4rem;
+    border-radius: 999px;
+    background: rgba(0, 0, 0, 0.06);
+    color: #6E6E73;
+  }
+  .category-tab.is-active .category-tab__badge {
+    background: rgba(0, 113, 227, 0.1);
+    color: #0071E3;
+  }
+
+  /* ─── Control Toolbar ──────────────────────────────── */
+  .catalog-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    background: #FFFFFF;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    border-radius: 14px;
+    padding: 0.65rem 1rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+  }
+
+  .catalog-toolbar__left,
+  .catalog-toolbar__right {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .page-jumper {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    font-size: 13.5px;
+    color: #6E6E73;
+    font-weight: 500;
+  }
+
+  .page-jumper__select {
+    padding: 0.35rem 0.65rem;
+    border-radius: 8px;
+    border: 1px solid rgba(0, 0, 0, 0.12);
+    background: #F5F5F7;
+    font-size: 13.5px;
+    font-weight: 600;
+    color: #1D1D1F;
+    cursor: pointer;
+    outline: none;
+    transition: border-color 0.15s ease;
+  }
+  .page-jumper__select:focus {
+    border-color: #0071E3;
+  }
+
+  .view-mode-toggle {
+    display: inline-flex;
+    align-items: center;
+    background: #F5F5F7;
+    padding: 2px;
+    border-radius: 10px;
+    border: 1px solid rgba(0, 0, 0, 0.06);
+  }
+
+  .view-mode-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.35rem 0.75rem;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #6E6E73;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    transition: all 0.18s ease;
+  }
+  .view-mode-btn__icon {
+    width: 15px;
+    height: 15px;
+  }
+  .view-mode-btn.is-active {
+    background: #FFFFFF;
+    color: #1D1D1F;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+  }
+
+  .btn-zoom-trigger {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.4rem 0.85rem;
+    border-radius: 9px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #0071E3;
+    background: rgba(0, 113, 227, 0.08);
+    border: 1px solid rgba(0, 113, 227, 0.18);
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  .btn-zoom-trigger:hover {
+    background: rgba(0, 113, 227, 0.14);
+  }
+  .btn-zoom-trigger__icon {
+    width: 15px;
+    height: 15px;
+  }
+
+  /* ─── Reader Focus View ────────────────────────────── */
+  .reader-view {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    align-items: center;
+  }
+
+  .reader-stage {
+    position: relative;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1.5rem;
+  }
+
+  .reader-card-wrapper {
+    width: 100%;
+    max-width: 650px;
+    display: flex;
+    justify-content: center;
+    position: relative;
+  }
+
+  .reader-card {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1 / 1.414; /* A4 aspect ratio */
+    background: #FFFFFF;
+    border-radius: 18px;
+    overflow: hidden;
+    box-shadow:
+      0 20px 45px -10px rgba(0, 0, 0, 0.12),
+      0 2px 10px rgba(0, 0, 0, 0.04),
+      0 0 0 1px rgba(0, 0, 0, 0.07);
+    cursor: pointer;
+    transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s ease;
+  }
+  .reader-card:hover {
+    transform: translateY(-4px);
+    box-shadow:
+      0 28px 60px -12px rgba(0, 0, 0, 0.16),
+      0 4px 16px rgba(0, 0, 0, 0.06),
+      0 0 0 1px rgba(0, 113, 227, 0.25);
+  }
+
+  .reader-card__img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
+    background: #FFFFFF;
+    transition: opacity 0.2s ease;
+  }
+
+  .reader-card__loader {
+    position: absolute;
+    inset: 0;
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+    z-index: 5;
+  }
+  .reader-card__loader.is-loading {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .spinner {
+    width: 36px;
+    height: 36px;
+    border: 3px solid rgba(0, 113, 227, 0.15);
+    border-top-color: #0071E3;
+    border-radius: 50%;
+    animation: spin 0.75s linear infinite;
+  }
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+
+  .reader-card__overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+  }
+  .reader-card:hover .reader-card__overlay {
+    opacity: 1;
+  }
+
+  .reader-card__hint {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.6rem 1.15rem;
+    border-radius: 999px;
+    background: rgba(0, 0, 0, 0.75);
+    backdrop-filter: blur(12px);
+    color: #FFFFFF;
+    font-size: 13.5px;
+    font-weight: 600;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+  }
+
+  /* Reader Navigation Floating Chevrons */
+  .reader-nav-btn {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: #FFFFFF;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #1D1D1F;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: all 0.2s ease;
+    z-index: 10;
+  }
+  .reader-nav-btn:hover {
+    background: #F5F5F7;
+    transform: scale(1.08);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.14);
+    border-color: rgba(0, 0, 0, 0.15);
+  }
+  .reader-nav-btn:active {
+    transform: scale(0.95);
+  }
+  .reader-nav-btn[disabled] {
+    opacity: 0.35;
+    pointer-events: none;
+  }
+
+  /* ─── Reader Actions / WhatsApp Conversion Bar ─────── */
+  .reader-actions {
+    width: 100%;
+    max-width: 650px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.75rem 1.25rem;
+    background: #FFFFFF;
+    border-radius: 16px;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
+  }
+
+  .reader-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+  }
+
+  .reader-info__tag {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #0071E3;
+  }
+
+  .reader-info__title {
+    font-size: 14.5px;
+    font-weight: 600;
+    color: #1D1D1F;
+  }
+
+  .reader-cta-group {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .catalog-btn-wa {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.65rem 1.35rem;
+    border-radius: 999px;
+    font-size: 13.5px;
+    font-weight: 600;
+    color: #FFFFFF;
+    background: linear-gradient(135deg, #0EA85A 0%, #25D366 50%, #5BE07A 100%);
+    text-decoration: none;
+    white-space: nowrap;
+    box-shadow: 0 2px 10px rgba(37, 211, 102, 0.28);
+    transition: all 0.2s ease;
+  }
+  .catalog-btn-wa:hover {
+    filter: brightness(1.08);
+    box-shadow: 0 6px 20px rgba(37, 211, 102, 0.42);
+    transform: translateY(-1px);
+  }
+  .catalog-btn-wa:active {
+    transform: scale(0.97);
+  }
+  .catalog-btn-wa__icon {
+    width: 18px;
+    height: 18px;
+    object-fit: contain;
+  }
+
+  .catalog-btn-zoom-mobile {
+    display: none;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.65rem 0.9rem;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #1D1D1F;
+    background: #F5F5F7;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    cursor: pointer;
+  }
+
+  /* ─── Thumbnail Strip ──────────────────────────────── */
+  .thumbnail-strip-container {
+    width: 100%;
+    max-width: 1000px;
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+    margin-top: 0.75rem;
+  }
+
+  .thumbnail-strip-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 0.5rem;
+  }
+
+  .thumbnail-strip-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: #1D1D1F;
+  }
+
+  .thumbnail-strip-hint {
+    font-size: 12px;
+    color: #8E8E93;
+  }
+
+  .thumbnail-strip {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    overflow-x: auto;
+    padding: 0.5rem 0.25rem 0.75rem;
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(0, 0, 0, 0.15) transparent;
+  }
+  .thumbnail-strip::-webkit-scrollbar {
+    height: 6px;
+  }
+  .thumbnail-strip::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.15);
+    border-radius: 999px;
+  }
+
+  .thumb-item {
+    flex: 0 0 82px;
+    background: transparent;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    border-radius: 10px;
+    transition: transform 0.15s ease;
+  }
+  .thumb-item:hover {
+    transform: translateY(-2px);
+  }
+
+  .thumb-item__img-wrap {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1 / 1.414;
+    background: #FFFFFF;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 2px solid transparent;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+    transition: all 0.2s ease;
+  }
+
+  .thumb-item.is-active .thumb-item__img-wrap {
+    border-color: #0071E3;
+    box-shadow: 0 0 0 3px rgba(0, 113, 227, 0.25), 0 4px 12px rgba(0, 113, 227, 0.2);
+    transform: scale(1.05);
+  }
+
+  .thumb-item__img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .thumb-item__badge {
+    position: absolute;
+    bottom: 4px;
+    right: 4px;
+    background: rgba(0, 0, 0, 0.75);
+    backdrop-filter: blur(4px);
+    color: #FFFFFF;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 1px 5px;
+    border-radius: 4px;
+  }
+
+  /* ─── Grid View (62 Pages Overview) ─────────────────── */
+  .grid-view[hidden] {
+    display: none;
+  }
+
+  .catalog-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 1.25rem;
+    width: 100%;
+  }
+
+  .grid-card {
+    background: #FFFFFF;
+    border-radius: 14px;
+    overflow: hidden;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .grid-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 24px -4px rgba(0, 0, 0, 0.12);
+    border-color: rgba(0, 113, 227, 0.3);
+  }
+
+  .grid-card__img-wrap {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1 / 1.414;
+    background: #F5F5F7;
+    overflow: hidden;
+  }
+
+  .grid-card__img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.3s ease;
+  }
+  .grid-card:hover .grid-card__img {
+    transform: scale(1.03);
+  }
+
+  .grid-card__overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.35);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+  }
+  .grid-card:hover .grid-card__overlay {
+    opacity: 1;
+  }
+
+  .grid-card__btn {
+    padding: 0.5rem 1rem;
+    border-radius: 999px;
+    background: #FFFFFF;
+    color: #1D1D1F;
+    font-size: 12.5px;
+    font-weight: 600;
+    border: none;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    cursor: pointer;
+  }
+
+  .grid-card__meta {
+    padding: 0.75rem 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+  }
+
+  .grid-card__number {
+    font-size: 13.5px;
+    font-weight: 700;
+    color: #1D1D1F;
+  }
+
+  .grid-card__category {
+    font-size: 12px;
+    color: #6E6E73;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* ─── Lightbox Modal ────────────────────────────────── */
+  .lightbox-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem;
+  }
+  .lightbox-modal[hidden] {
+    display: none;
+  }
+
+  .lightbox-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(10, 10, 12, 0.88);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+  }
+
+  .lightbox-toolbar {
+    position: relative;
+    z-index: 10;
+    width: 100%;
+    max-width: 900px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.6rem 1.2rem;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 999px;
+    backdrop-filter: blur(20px);
+    color: #FFFFFF;
+  }
+
+  .lightbox-toolbar__info {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 13.5px;
+    font-weight: 600;
+  }
+  .lightbox-toolbar__sep {
+    opacity: 0.4;
+  }
+
+  .lightbox-toolbar__controls {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+
+  .lightbox-ctrl-btn {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.12);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #FFFFFF;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 11px;
+    font-weight: 700;
+    transition: all 0.15s ease;
+  }
+  .lightbox-ctrl-btn svg {
+    width: 16px;
+    height: 16px;
+  }
+  .lightbox-ctrl-btn:hover {
+    background: rgba(255, 255, 255, 0.25);
+  }
+  .lightbox-ctrl-btn--close {
+    background: rgba(239, 68, 68, 0.2);
+    border-color: rgba(239, 68, 68, 0.3);
+    color: #FCA5A5;
+  }
+  .lightbox-ctrl-btn--close:hover {
+    background: rgba(239, 68, 68, 0.4);
+    color: #FFFFFF;
+  }
+
+  .lightbox-stage {
+    position: relative;
+    z-index: 10;
+    width: 100%;
+    height: calc(100vh - 170px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+
+  .lightbox-img-wrapper {
+    position: relative;
+    max-width: 90vw;
+    max-height: 80vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    user-select: none;
+    touch-action: none;
+    transition: transform 0.1s ease-out;
+  }
+
+  .lightbox-img {
+    max-width: 100%;
+    max-height: 80vh;
+    object-fit: contain;
+    border-radius: 8px;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+    background: #FFFFFF;
+  }
+
+  .lightbox-nav-btn {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(12px);
+    color: #FFFFFF;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    z-index: 20;
+  }
+  .lightbox-nav-btn svg {
+    width: 22px;
+    height: 22px;
+  }
+  .lightbox-nav-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: translateY(-50%) scale(1.1);
+  }
+  .lightbox-nav-btn--prev { left: 1rem; }
+  .lightbox-nav-btn--next { right: 1rem; }
+
+  .lightbox-bottom-bar {
+    position: relative;
+    z-index: 10;
+  }
+  .catalog-btn-wa--modal {
+    padding: 0.55rem 1.5rem;
+    font-size: 14px;
+  }
+
+  /* ─── Responsive Queries ────────────────────────────── */
+
+  /* ── Tablet (≤ 900px) ── */
+  @media (max-width: 900px) {
+    .reader-nav-btn {
+      width: 40px;
+      height: 40px;
+    }
+    .reader-card-wrapper {
+      max-width: 560px;
+    }
+    .catalog-grid {
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 1rem;
+    }
+  }
+
+  /* ── Mobile (≤ 768px) ── */
+  @media (max-width: 768px) {
+    /* --- Section & Container --- */
+    .catalog-section {
+      padding: 0.75rem 0.875rem 7rem; /* Extra bottom for fixed WA bar */
+    }
+
+    .catalog-container {
+      gap: 1rem;
+    }
+
+    /* --- Category Tabs: Scrollable Pill Row --- */
+    .category-tabs-wrapper {
+      padding-bottom: 0.25rem;
+    }
+
+    .category-tabs {
+      /* Let it overflow-scroll naturally, no wrap */
+      gap: 0.35rem;
+      padding: 0.25rem;
+    }
+
+    .category-tab {
+      padding: 0.4rem 0.75rem;
+      font-size: 12.5px;
+    }
+
+    .category-tab__badge {
+      font-size: 10px;
+      padding: 0.05rem 0.35rem;
+    }
+
+    /* --- Toolbar: Compact 2-Row Stack --- */
+    .catalog-toolbar {
+      flex-direction: column;
+      gap: 0.6rem;
+      padding: 0.6rem 0.875rem;
+      border-radius: 12px;
+    }
+
+    .catalog-toolbar__left {
+      width: 100%;
+    }
+
+    .catalog-toolbar__right {
+      width: 100%;
+      justify-content: space-between;
+    }
+
+    .page-jumper {
+      font-size: 12.5px;
+      gap: 0.35rem;
+      flex: 1;
+    }
+
+    .page-jumper__select {
+      font-size: 12.5px;
+      flex: 1;
+      min-width: 0;
+    }
+
+    .view-mode-btn__text {
+      display: none; /* Icon only on mobile to save space */
+    }
+
+    .btn-zoom-trigger__text {
+      display: none;
+    }
+
+    .btn-zoom-trigger {
+      padding: 0.4rem 0.6rem;
+    }
+
+    /* --- Reader Stage: Full Width, No Side Arrows --- */
+    .reader-stage {
+      gap: 0;
+    }
+
+    .reader-nav-btn {
+      display: none; /* Replaced by swipe gesture */
+    }
+
+    .reader-card-wrapper {
+      max-width: 100%;
+    }
+
+    .reader-card {
+      border-radius: 12px;
+      /* Subtle lift shadow on mobile */
+      box-shadow:
+        0 8px 24px -4px rgba(0, 0, 0, 0.1),
+        0 0 0 1px rgba(0, 0, 0, 0.07);
+    }
+
+    /* Swipe hint badge on mobile */
+    .reader-card__hint {
+      font-size: 12px;
+      padding: 0.45rem 0.85rem;
+    }
+
+    /* --- Actions Bar: Stacked, Full-Width Buttons --- */
+    .reader-actions {
+      flex-direction: row;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.65rem;
+      padding: 0.65rem 0.875rem;
+      border-radius: 12px;
+    }
+
+    .reader-info {
+      gap: 0.1rem;
+      flex-shrink: 0;
+    }
+
+    .reader-info__tag {
+      font-size: 10px;
+    }
+
+    .reader-info__title {
+      font-size: 13px;
+    }
+
+    .reader-cta-group {
+      gap: 0.4rem;
+      flex-shrink: 0;
+    }
+
+    /* Make WA button compact on mobile (full text stays but icon shown) */
+    .catalog-btn-wa {
+      padding: 0.55rem 0.95rem;
+      font-size: 12.5px;
+      border-radius: 999px;
+    }
+
+    /* Show Zoom mobile button */
+    .catalog-btn-zoom-mobile {
+      display: inline-flex;
+      padding: 0.55rem 0.75rem;
+      border-radius: 999px;
+    }
+
+    /* --- Thumbnail Strip: Bigger Touch Targets --- */
+    .thumbnail-strip-container {
+      margin-top: 0.25rem;
+    }
+
+    .thumbnail-strip-header {
+      padding: 0 0.25rem;
+    }
+
+    .thumbnail-strip-title {
+      font-size: 12px;
+    }
+
+    .thumbnail-strip-hint {
+      font-size: 11px;
+    }
+
+    .thumbnail-strip {
+      gap: 0.5rem;
+      padding: 0.35rem 0.25rem 0.65rem;
+    }
+
+    .thumb-item {
+      flex: 0 0 68px; /* Slightly narrower on mobile */
+    }
+
+    /* --- Grid View: 2-Column on Mobile --- */
+    .catalog-grid {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 0.75rem;
+    }
+
+    .grid-card__meta {
+      padding: 0.55rem 0.65rem;
+    }
+
+    .grid-card__number {
+      font-size: 12.5px;
+    }
+
+    .grid-card__category {
+      font-size: 11px;
+    }
+
+    /* --- Lightbox: Full Screen Friendly --- */
+    .lightbox-modal {
+      padding: 0.5rem 0.5rem 0.75rem;
+    }
+
+    .lightbox-toolbar {
+      border-radius: 12px;
+      padding: 0.45rem 0.65rem;
+      gap: 0.5rem;
+    }
+
+    .lightbox-toolbar__info {
+      font-size: 12px;
+    }
+
+    .lightbox-ctrl-btn {
+      width: 30px;
+      height: 30px;
+    }
+
+    .lightbox-ctrl-btn svg {
+      width: 14px;
+      height: 14px;
+    }
+
+    /* Hide lightbox nav arrows: user swipes instead */
+    .lightbox-nav-btn {
+      display: none;
+    }
+
+    .lightbox-stage {
+      height: calc(100dvh - 150px);
+    }
+
+    .lightbox-img {
+      max-height: 75dvh;
+    }
+
+    .lightbox-bottom-bar {
+      width: 100%;
+    }
+
+    .catalog-btn-wa--modal {
+      width: 100%;
+      justify-content: center;
+      padding: 0.65rem 1.25rem;
+      border-radius: 12px;
+      font-size: 14px;
+    }
+  }
+
+  /* ── Small Mobile (≤ 430px) ── */
+  @media (max-width: 430px) {
+    .catalog-section {
+      padding: 0.5rem 0.75rem 7rem;
+    }
+
+    .category-tab {
+      padding: 0.35rem 0.65rem;
+      font-size: 12px;
+    }
+
+    .reader-actions {
+      gap: 0.5rem;
+      padding: 0.55rem 0.75rem;
+    }
+
+    .reader-info__title {
+      font-size: 12px;
+    }
+
+    /* WA label shorter on very small screens */
+    #wa-btn-label {
+      font-size: 0; /* Hide text, show icon only */
+    }
+    #wa-btn-label::after {
+      content: "Tanya";
+      font-size: 12.5px;
+    }
+
+    .catalog-btn-wa {
+      padding: 0.55rem 0.75rem;
+    }
+
+    .thumb-item {
+      flex: 0 0 58px;
+    }
+
+    .catalog-grid {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 0.6rem;
+    }
+
+    .grid-card__meta {
+      padding: 0.4rem 0.5rem;
+    }
+  }
+</style>
+
+<script>
+  import {
+    CATALOG_PAGES,
+    CATEGORIES,
+    CLOUD_NAME,
+    ROOT_FOLDER,
+    WA_NUMBER,
+    getCloudinaryUrl,
+    getWhatsAppCatalogLink,
+  } from "../data/catalog";
+
+  let currentPageIndex = 0; // 0-indexed (Page 1 = index 0)
+  let activeFilterCategory = "all";
+  let activeViewMode: "reader" | "grid" = "reader";
+
+  // Lightbox Zoom state
+  let currentZoom = 1;
+  let isDragging = false;
+  let startX = 0;
+  let startY = 0;
+  let translateX = 0;
+  let translateY = 0;
+
+  // DOM Elements
+  const activeImg = document.getElementById("active-page-img") as HTMLImageElement;
+  const cardLoader = document.getElementById("card-loader") as HTMLElement;
+  const pageSelect = document.getElementById("page-select") as HTMLSelectElement;
+  const btnPrev = document.getElementById("btn-prev-page") as HTMLButtonElement;
+  const btnNext = document.getElementById("btn-next-page") as HTMLButtonElement;
+  const currentCategoryTag = document.getElementById("current-category-tag") as HTMLElement;
+  const currentPageTitle = document.getElementById("current-page-title") as HTMLElement;
+  const btnCatalogWa = document.getElementById("btn-catalog-wa") as HTMLAnchorElement;
+  const waBtnLabel = document.getElementById("wa-btn-label") as HTMLElement;
+
+  const readerView = document.getElementById("reader-view") as HTMLElement;
+  const gridView = document.getElementById("grid-view") as HTMLElement;
+  const btnModeReader = document.getElementById("btn-mode-reader") as HTMLButtonElement;
+  const btnModeGrid = document.getElementById("btn-mode-grid") as HTMLButtonElement;
+
+  const categoryTabs = document.querySelectorAll(".category-tab");
+  const thumbItems = document.querySelectorAll(".thumb-item");
+  const gridCards = document.querySelectorAll(".grid-card");
+  const readerCard = document.getElementById("reader-card") as HTMLElement;
+  const thumbnailStrip = document.getElementById("thumbnail-strip") as HTMLElement;
+
+  // Lightbox Elements
+  const lightboxModal = document.getElementById("lightbox-modal") as HTMLElement;
+  const lightboxBackdrop = document.getElementById("lightbox-backdrop") as HTMLElement;
+  const lightboxImg = document.getElementById("lightbox-img") as HTMLImageElement;
+  const lightboxImgWrapper = document.getElementById("lightbox-img-wrapper") as HTMLElement;
+  const btnOpenZoom = document.getElementById("btn-open-zoom") as HTMLButtonElement;
+  const btnZoomMobile = document.getElementById("btn-zoom-mobile") as HTMLButtonElement;
+  const btnCloseLightbox = document.getElementById("btn-close-lightbox") as HTMLButtonElement;
+  const btnZoomIn = document.getElementById("btn-zoom-in") as HTMLButtonElement;
+  const btnZoomOut = document.getElementById("btn-zoom-out") as HTMLButtonElement;
+  const btnZoomReset = document.getElementById("btn-zoom-reset") as HTMLButtonElement;
+  const btnLightboxPrev = document.getElementById("btn-lightbox-prev") as HTMLButtonElement;
+  const btnLightboxNext = document.getElementById("btn-lightbox-next") as HTMLButtonElement;
+  const lightboxPageNum = document.getElementById("lightbox-page-num") as HTMLElement;
+  const lightboxPageCat = document.getElementById("lightbox-page-cat") as HTMLElement;
+  const btnLightboxWa = document.getElementById("btn-lightbox-wa") as HTMLAnchorElement;
+  const lightboxWaText = document.getElementById("lightbox-wa-text") as HTMLElement;
+
+  // ─── Core: Go to Page ────────────────────────────────
+  function goToPage(index: number, smoothScrollThumb = true) {
+    if (index < 0 || index >= CATALOG_PAGES.length) return;
+    currentPageIndex = index;
+    const page = CATALOG_PAGES[currentPageIndex];
+
+    // Show quick loader
+    if (cardLoader) cardLoader.classList.add("is-loading");
+
+    // Load new image
+    const newSrc = getCloudinaryUrl(page.publicId, "reader");
+    const tempImg = new Image();
+    tempImg.src = newSrc;
+    tempImg.onload = () => {
+      if (activeImg) activeImg.src = newSrc;
+      if (cardLoader) cardLoader.classList.remove("is-loading");
+    };
+    tempImg.onerror = () => {
+      if (cardLoader) cardLoader.classList.remove("is-loading");
+    };
+
+    // Update Select Dropdown
+    if (pageSelect) pageSelect.value = String(page.pageNumber);
+
+    // Update Category Tag & Title
+    const catObj = CATEGORIES.find((c) => c.id === page.category);
+    if (currentCategoryTag) currentCategoryTag.textContent = catObj ? catObj.name : page.category;
+    if (currentPageTitle) currentPageTitle.textContent = `Halaman ${page.pageNumber} dari ${CATALOG_PAGES.length}`;
+
+    // Update WhatsApp CTA
+    const waLink = getWhatsAppCatalogLink(page.pageNumber, page.title);
+    if (btnCatalogWa) btnCatalogWa.href = waLink;
+    if (waBtnLabel) waBtnLabel.textContent = `Tanya Produk Halaman ${page.pageNumber}`;
+
+    // Update Next/Prev Disabled State
+    if (btnPrev) btnPrev.disabled = currentPageIndex === 0;
+    if (btnNext) btnNext.disabled = currentPageIndex === CATALOG_PAGES.length - 1;
+
+    // Update Thumbnails Active State
+    thumbItems.forEach((item) => {
+      const pNum = Number(item.getAttribute("data-page"));
+      const isActive = pNum === page.pageNumber;
+      item.classList.toggle("is-active", isActive);
+      item.setAttribute("aria-selected", String(isActive));
+    });
+
+    // Auto-scroll active thumbnail into view
+    if (smoothScrollThumb && thumbnailStrip) {
+      const activeThumbEl = document.getElementById(`thumb-${page.pageNumber}`);
+      if (activeThumbEl) {
+        const offsetLeft = activeThumbEl.offsetLeft - thumbnailStrip.clientWidth / 2 + activeThumbEl.clientWidth / 2;
+        thumbnailStrip.scrollTo({ left: offsetLeft, behavior: "smooth" });
+      }
+    }
+
+    // Prefetch Adjacent Pages (Next & Prev for instantaneous flipping)
+    prefetchAdjacentPages(currentPageIndex);
+
+    // If Lightbox is open, update lightbox too
+    if (lightboxModal && !lightboxModal.hidden) {
+      updateLightboxContent();
+    }
+  }
+
+  // ─── Background Prefetch ─────────────────────────────
+  function prefetchAdjacentPages(idx: number) {
+    if (idx + 1 < CATALOG_PAGES.length) {
+      const nextImg = new Image();
+      nextImg.src = getCloudinaryUrl(CATALOG_PAGES[idx + 1]?.publicId, "reader");
+    }
+    if (idx - 1 >= 0) {
+      const prevImg = new Image();
+      prevImg.src = getCloudinaryUrl(CATALOG_PAGES[idx - 1]?.publicId, "reader");
+    }
+  }
+
+  // ─── Filter Category ─────────────────────────────────
+  function filterByCategory(categoryId: string) {
+    activeFilterCategory = categoryId;
+
+    // Update tab active state
+    categoryTabs.forEach((tab) => {
+      const cat = tab.getAttribute("data-category");
+      const isSelected = cat === categoryId;
+      tab.classList.toggle("is-active", isSelected);
+      tab.setAttribute("aria-selected", String(isSelected));
+    });
+
+    // Filter Grid Cards
+    gridCards.forEach((card) => {
+      const cardCat = card.getAttribute("data-category");
+      const isVisible = categoryId === "all" || cardCat === categoryId;
+      (card as HTMLElement).style.display = isVisible ? "block" : "none";
+    });
+
+    // Filter Thumbnails
+    thumbItems.forEach((thumb) => {
+      const thumbCat = thumb.getAttribute("data-category");
+      const isVisible = categoryId === "all" || thumbCat === categoryId;
+      (thumb as HTMLElement).style.display = isVisible ? "inline-block" : "none";
+    });
+
+    // Jump to the first page of this category
+    if (categoryId !== "all") {
+      const firstMatchIndex = CATALOG_PAGES.findIndex((p) => p.category === categoryId);
+      if (firstMatchIndex !== -1) {
+        goToPage(firstMatchIndex);
+      }
+    }
+  }
+
+  // ─── View Mode Switcher ──────────────────────────────
+  function setViewMode(mode: "reader" | "grid") {
+    activeViewMode = mode;
+    if (mode === "reader") {
+      readerView.hidden = false;
+      gridView.hidden = true;
+      btnModeReader.classList.add("is-active");
+      btnModeGrid.classList.remove("is-active");
+    } else {
+      readerView.hidden = true;
+      gridView.hidden = false;
+      btnModeReader.classList.remove("is-active");
+      btnModeGrid.classList.add("is-active");
+    }
+  }
+
+  // ─── Lightbox Fullscreen Zoom ────────────────────────
+  function openLightbox() {
+    if (!lightboxModal) return;
+    lightboxModal.hidden = false;
+    lightboxModal.setAttribute("aria-hidden", "false");
+    document.body.style.overflow = "hidden";
+    currentZoom = 1;
+    translateX = 0;
+    translateY = 0;
+    applyImageTransform();
+    updateLightboxContent();
+  }
+
+  function closeLightbox() {
+    if (!lightboxModal) return;
+    lightboxModal.hidden = true;
+    lightboxModal.setAttribute("aria-hidden", "true");
+    document.body.style.overflow = "";
+  }
+
+  function updateLightboxContent() {
+    const page = CATALOG_PAGES[currentPageIndex];
+    if (!page) return;
+
+    // Load High-Res Zoom Image from Cloudinary
+    if (lightboxImg) {
+      lightboxImg.src = getCloudinaryUrl(page.publicId, "zoom");
+    }
+    if (lightboxPageNum) lightboxPageNum.textContent = `Halaman ${page.pageNumber}`;
+    const catObj = CATEGORIES.find((c) => c.id === page.category);
+    if (lightboxPageCat) lightboxPageCat.textContent = catObj ? catObj.name : page.category;
+    if (btnLightboxWa) btnLightboxWa.href = getWhatsAppCatalogLink(page.pageNumber, page.title);
+    if (lightboxWaText) lightboxWaText.textContent = `Tanya Produk Hal ${page.pageNumber} via WhatsApp`;
+  }
+
+  function applyImageTransform() {
+    if (lightboxImgWrapper) {
+      lightboxImgWrapper.style.transform = `translate(${translateX}px, ${translateY}px) scale(${currentZoom})`;
+    }
+  }
+
+  function setZoom(factor: number) {
+    currentZoom = Math.min(Math.max(1, currentZoom + factor), 3.5);
+    if (currentZoom === 1) {
+      translateX = 0;
+      translateY = 0;
+    }
+    applyImageTransform();
+  }
+
+  // ─── Event Listeners Setup ───────────────────────────
+  // 1. Navigation Next / Prev
+  btnPrev?.addEventListener("click", () => goToPage(currentPageIndex - 1));
+  btnNext?.addEventListener("click", () => goToPage(currentPageIndex + 1));
+  btnLightboxPrev?.addEventListener("click", () => goToPage(currentPageIndex - 1));
+  btnLightboxNext?.addEventListener("click", () => goToPage(currentPageIndex + 1));
+
+  // 2. Select Page
+  pageSelect?.addEventListener("change", (e) => {
+    const targetPage = Number((e.target as HTMLSelectElement).value);
+    const targetIdx = CATALOG_PAGES.findIndex((p) => p.pageNumber === targetPage);
+    if (targetIdx !== -1) goToPage(targetIdx);
+  });
+
+  // 3. Category Tabs
+  categoryTabs.forEach((tab) => {
+    tab.addEventListener("click", () => {
+      const cat = tab.getAttribute("data-category") || "all";
+      filterByCategory(cat);
+    });
+  });
+
+  // 4. Thumbnail clicks
+  thumbItems.forEach((thumb) => {
+    thumb.addEventListener("click", () => {
+      const pNum = Number(thumb.getAttribute("data-page"));
+      const targetIdx = CATALOG_PAGES.findIndex((p) => p.pageNumber === pNum);
+      if (targetIdx !== -1) goToPage(targetIdx);
+    });
+  });
+
+  // 5. Grid Card clicks
+  gridCards.forEach((card) => {
+    card.addEventListener("click", () => {
+      const pNum = Number(card.getAttribute("data-page"));
+      const targetIdx = CATALOG_PAGES.findIndex((p) => p.pageNumber === pNum);
+      if (targetIdx !== -1) {
+        setViewMode("reader");
+        goToPage(targetIdx);
+        // Scroll to reader smoothly
+        readerView.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+    });
+  });
+
+  // 6. View Mode Toggle
+  btnModeReader?.addEventListener("click", () => setViewMode("reader"));
+  btnModeGrid?.addEventListener("click", () => setViewMode("grid"));
+
+  // 7. Lightbox Triggers
+  readerCard?.addEventListener("click", openLightbox);
+  btnOpenZoom?.addEventListener("click", openLightbox);
+  btnZoomMobile?.addEventListener("click", openLightbox);
+  btnCloseLightbox?.addEventListener("click", closeLightbox);
+  lightboxBackdrop?.addEventListener("click", closeLightbox);
+
+  // 8. Zoom Controls
+  btnZoomIn?.addEventListener("click", () => setZoom(0.5));
+  btnZoomOut?.addEventListener("click", () => setZoom(-0.5));
+  btnZoomReset?.addEventListener("click", () => {
+    currentZoom = 1;
+    translateX = 0;
+    translateY = 0;
+    applyImageTransform();
+  });
+
+  // 9. Keyboard Shortcuts (Left / Right Arrow, Escape)
+  window.addEventListener("keydown", (e) => {
+    if (lightboxModal && !lightboxModal.hidden) {
+      if (e.key === "Escape") closeLightbox();
+      if (e.key === "ArrowLeft") goToPage(currentPageIndex - 1);
+      if (e.key === "ArrowRight") goToPage(currentPageIndex + 1);
+      if (e.key === "+" || e.key === "=") setZoom(0.5);
+      if (e.key === "-") setZoom(-0.5);
+      return;
+    }
+
+    if (activeViewMode === "reader") {
+      if (e.key === "ArrowLeft") goToPage(currentPageIndex - 1);
+      if (e.key === "ArrowRight") goToPage(currentPageIndex + 1);
+      if (e.key.toLowerCase() === "z") openLightbox();
+    }
+  });
+
+  // 10. Touch Swipe Support for Mobile on Reader Card
+  let touchStartX = 0;
+  let touchEndX = 0;
+  readerCard?.addEventListener(
+    "touchstart",
+    (e) => {
+      touchStartX = e.changedTouches[0].screenX;
+    },
+    { passive: true }
+  );
+
+  readerCard?.addEventListener(
+    "touchend",
+    (e) => {
+      touchEndX = e.changedTouches[0].screenX;
+      handleSwipe();
+    },
+    { passive: true }
+  );
+
+  function handleSwipe() {
+    const swipeThreshold = 50;
+    if (touchEndX < touchStartX - swipeThreshold) {
+      // Swiped Left -> Next
+      goToPage(currentPageIndex + 1);
+    }
+    if (touchEndX > touchStartX + swipeThreshold) {
+      // Swiped Right -> Prev
+      goToPage(currentPageIndex - 1);
+    }
+  }
+
+  // 11. Drag to Pan when zoomed in Lightbox
+  lightboxImgWrapper?.addEventListener("mousedown", (e) => {
+    if (currentZoom <= 1) return;
+    isDragging = true;
+    startX = e.clientX - translateX;
+    startY = e.clientY - translateY;
+    lightboxImgWrapper.style.cursor = "grabbing";
+  });
+
+  window.addEventListener("mousemove", (e) => {
+    if (!isDragging) return;
+    translateX = e.clientX - startX;
+    translateY = e.clientY - startY;
+    applyImageTransform();
+  });
+
+  window.addEventListener("mouseup", () => {
+    isDragging = false;
+    if (lightboxImgWrapper) lightboxImgWrapper.style.cursor = "default";
+  });
+
+  // Initial setup on load
+  goToPage(0, false);
+</script>
