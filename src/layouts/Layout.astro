@@ -24,9 +24,11 @@ const ogImageURL = image.startsWith('http') ? image : new URL(image, siteUrl).hr
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-    <!-- Preconnect to Cloudinary CDN for instant image delivery -->
+    <!-- Preconnect to Cloudinary CDN & Google Drive for instant delivery & fast download -->
     <link rel="preconnect" href="https://res.cloudinary.com" crossorigin />
     <link rel="dns-prefetch" href="https://res.cloudinary.com" />
+    <link rel="preconnect" href="https://drive.usercontent.google.com" crossorigin />
+    <link rel="dns-prefetch" href="https://drive.usercontent.google.com" />
 
     <!-- Favicon & App Icons -->
     <link rel="icon" type="image/png" href="/favicon/favicon-96x96.png" sizes="96x96" />

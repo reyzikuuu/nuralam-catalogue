@@ -61,54 +61,166 @@
         <span>Konsultasi Gratis</span>
       </a>
 
-      <!-- Secondary: Download Katalog Langsung -->
-      <a
-        href="https://drive.usercontent.google.com/download?id=1x1vtKKwr7qk9Xzhp3LfldcmZ6PTJA-RF&export=download"
-        download="Nuralam Packaging Katalog 2026.pdf"
-        class="hero__btn hero__btn--download"
-        aria-label="Download Katalog Nuralam Packaging PDF"
-        id="hero-download-btn"
-      >
-        <!-- Download icon (inline SVG) -->
-        <svg
-          class="hero__btn-icon"
-          viewBox="0 0 20 20"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-          aria-hidden="true"
+      <!-- Secondary: Download Katalog with 2 Choices (Kosmetik & Parfum) -->
+      <div class="hero__download-wrapper" id="hero-download-wrapper">
+        <button
+          type="button"
+          class="hero__btn hero__btn--download hero__download-trigger"
+          id="hero-download-trigger"
+          aria-haspopup="true"
+          aria-expanded="false"
+          aria-controls="hero-download-menu"
+          aria-label="Pilih katalog untuk didownload"
         >
-          <path
-            d="M10 3v9m0 0-3-3m3 3 3-3"
-            stroke="currentColor"
-            stroke-width="1.75"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          />
-          <path
-            d="M3 14v1a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-1"
-            stroke="currentColor"
-            stroke-width="1.75"
-            stroke-linecap="round"
-          />
-        </svg>
-        <span id="hero-download-text">Download Katalog</span>
-      </a>
+          <!-- Download icon (inline SVG) -->
+          <svg
+            class="hero__btn-icon"
+            viewBox="0 0 20 20"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            aria-hidden="true"
+          >
+            <path
+              d="M10 3v9m0 0-3-3m3 3 3-3"
+              stroke="currentColor"
+              stroke-width="1.75"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+            <path
+              d="M3 14v1a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-1"
+              stroke="currentColor"
+              stroke-width="1.75"
+              stroke-linecap="round"
+            />
+          </svg>
+          <span id="hero-download-text">Download Katalog</span>
+          <!-- Chevron Indicator -->
+          <svg
+            class="hero__btn-chevron"
+            viewBox="0 0 16 16"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            aria-hidden="true"
+          >
+            <path
+              d="M4 6l4 4 4-4"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+          </svg>
+        </button>
+
+        <!-- Dropdown Popover Menu (Minimalist Modern) -->
+        <div
+          class="hero__download-menu"
+          id="hero-download-menu"
+          role="menu"
+          aria-label="Pilihan Format Katalog"
+          hidden
+        >
+          <div class="hero__dropdown-header">
+            <span class="hero__dropdown-edition">Edisi 2026</span>
+          </div>
+
+          <div class="hero__dropdown-list">
+            <!-- Option 1: Katalog Kosmetik -->
+            <a
+              href="https://drive.usercontent.google.com/download?id=1o78enqzl3QFHRe3nXWfrf1INN7HGUnfv&export=download"
+              download="Katalog Kosmetik Nuralam 2026.pdf"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="hero__dropdown-item"
+              role="menuitem"
+              data-catalog-type="Kosmetik"
+            >
+              <span class="hero__dropdown-item-name">Katalog Kosmetik</span>
+            </a>
+
+            <!-- Option 2: Katalog Parfum -->
+            <a
+              href="https://drive.usercontent.google.com/download?id=14_IC0gfZi-tn77qBKQp275XLKEbo6Z-m&export=download"
+              download="Katalog Parfume Nuralam 2026.pdf"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="hero__dropdown-item"
+              role="menuitem"
+              data-catalog-type="Parfum"
+            >
+              <span class="hero__dropdown-item-name">Katalog Parfum</span>
+            </a>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </section>
 
 <script>
-  const downloadBtn = document.getElementById('hero-download-btn');
-  const downloadText = document.getElementById('hero-download-text');
+  const wrapper = document.getElementById('hero-download-wrapper');
+  const trigger = document.getElementById('hero-download-trigger');
+  const menu = document.getElementById('hero-download-menu');
+  const triggerText = document.getElementById('hero-download-text');
+  const items = document.querySelectorAll<HTMLAnchorElement>('.hero__dropdown-item');
 
-  downloadBtn?.addEventListener('click', () => {
-    if (downloadText) {
-      const originalText = downloadText.textContent;
-      downloadText.textContent = 'Mengunduh...';
-      setTimeout(() => {
-        downloadText.textContent = originalText;
-      }, 3500);
+  function openDropdown() {
+    if (!wrapper || !trigger || !menu) return;
+    wrapper.classList.add('is-open');
+    menu.hidden = false;
+    trigger.setAttribute('aria-expanded', 'true');
+  }
+
+  function closeDropdown() {
+    if (!wrapper || !trigger || !menu) return;
+    wrapper.classList.remove('is-open');
+    menu.hidden = true;
+    trigger.setAttribute('aria-expanded', 'false');
+  }
+
+  function toggleDropdown(e: MouseEvent) {
+    e.stopPropagation();
+    if (wrapper?.classList.contains('is-open')) {
+      closeDropdown();
+    } else {
+      openDropdown();
     }
+  }
+
+  trigger?.addEventListener('click', toggleDropdown);
+
+  // Close when clicking outside
+  document.addEventListener('click', (e) => {
+    if (wrapper && !wrapper.contains(e.target as Node)) {
+      closeDropdown();
+    }
+  });
+
+  // Close on Escape key
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && wrapper?.classList.contains('is-open')) {
+      closeDropdown();
+      trigger?.focus();
+    }
+  });
+
+  // Handle fast download execution & visual feedback
+  items.forEach((item) => {
+    item.addEventListener('click', () => {
+      const catalogType = item.getAttribute('data-catalog-type') || '';
+      if (triggerText) {
+        const originalText = triggerText.textContent;
+        triggerText.textContent = `Mengunduh ${catalogType}...`;
+        setTimeout(() => {
+          if (triggerText) triggerText.textContent = originalText;
+        }, 3000);
+      }
+      // Close dropdown after click
+      setTimeout(() => {
+        closeDropdown();
+      }, 350);
+    });
   });
 </script>
 
@@ -116,12 +228,13 @@
   /* ─── Section Shell ─────────────────────────────── */
   .hero {
     position: relative;
+    z-index: 20;
     width: 100%;
     min-height: 80dvh;
     display: flex;
     align-items: center;
     justify-content: center;
-    overflow: hidden;
+    overflow: visible;
     padding: 2rem 1.5rem 5rem;
   }
 
@@ -342,18 +455,138 @@
     box-shadow: 0 6px 24px rgba(37, 211, 102, 0.4);
   }
 
-  /* Download button */
+  /* Download button & Dropdown wrapper */
+  .hero__download-wrapper {
+    position: relative;
+    display: inline-flex;
+    z-index: 35;
+  }
+  .hero__download-wrapper.is-open {
+    z-index: 60;
+  }
+
   .hero__btn--download {
     background: rgba(255, 255, 255, 0.9);
     color: #1D1D1F;
     border: 1px solid rgba(0, 0, 0, 0.1);
     box-shadow: 0 1px 6px rgba(0, 0, 0, 0.06);
     backdrop-filter: blur(8px);
+    cursor: pointer;
+    font-family: inherit;
+    user-select: none;
   }
   .hero__btn--download:hover {
     background: #fff;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
     border-color: rgba(0, 0, 0, 0.14);
+  }
+
+  .hero__download-wrapper.is-open .hero__btn--download {
+    background: #fff;
+    border-color: rgba(0, 113, 227, 0.4);
+    box-shadow: 0 0 0 3px rgba(0, 113, 227, 0.15), 0 4px 16px rgba(0, 0, 0, 0.08);
+  }
+
+  .hero__btn-chevron {
+    width: 14px;
+    height: 14px;
+    color: #6E6E73;
+    transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), color 0.2s ease;
+    flex-shrink: 0;
+  }
+
+  .hero__download-wrapper.is-open .hero__btn-chevron {
+    transform: rotate(180deg);
+    color: #0071E3;
+  }
+
+  /* ─── Dropdown Popover Menu (Minimalist Modern) ─── */
+  .hero__download-menu {
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%) translateY(-6px) scale(0.97);
+    width: 210px;
+    max-width: calc(100vw - 32px);
+    background: rgba(255, 255, 255, 0.96);
+    -webkit-backdrop-filter: blur(24px) saturate(190%);
+    backdrop-filter: blur(24px) saturate(190%);
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    box-shadow:
+      0 12px 30px -4px rgba(10, 22, 40, 0.14),
+      0 2px 6px rgba(0, 0, 0, 0.04),
+      inset 0 1px 1px rgba(255, 255, 255, 0.95);
+    border-radius: 14px;
+    padding: 0.35rem;
+    z-index: 60;
+    opacity: 0;
+    pointer-events: none;
+    visibility: hidden;
+    transition:
+      opacity 0.18s cubic-bezier(0.16, 1, 0.3, 1),
+      transform 0.18s cubic-bezier(0.16, 1, 0.3, 1),
+      visibility 0.18s;
+  }
+
+  .hero__download-wrapper.is-open .hero__download-menu {
+    opacity: 1;
+    pointer-events: auto;
+    visibility: visible;
+    transform: translateX(-50%) translateY(0) scale(1);
+  }
+
+  .hero__dropdown-header {
+    padding: 0.35rem 0.55rem 0.35rem;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+    margin-bottom: 0.25rem;
+    text-align: center;
+  }
+
+  .hero__dropdown-edition {
+    font-size: 10.5px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: #86868B;
+  }
+
+  .hero__dropdown-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+  }
+
+  .hero__dropdown-item {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.6rem 0.75rem;
+    border-radius: 9px;
+    text-decoration: none;
+    color: #1D1D1F;
+    font-size: 13.5px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    text-align: center;
+    transition:
+      background 0.15s ease,
+      color 0.15s ease,
+      transform 0.1s ease;
+    cursor: pointer;
+  }
+
+  .hero__dropdown-item:hover {
+    background: rgba(0, 113, 227, 0.08);
+    color: #0071E3;
+  }
+
+  .hero__dropdown-item:active {
+    transform: scale(0.97);
+  }
+
+  .hero__dropdown-item-name {
+    font-size: 13.5px;
+    font-weight: 600;
   }
 
   .hero__btn-icon {
@@ -368,6 +601,7 @@
     .hero {
       min-height: auto;
       padding: 1.5rem 1rem 4rem;
+      overflow: visible;
     }
 
     .hero__inner {
@@ -408,6 +642,12 @@
       gap: 0.55rem;
     }
 
+    .hero__download-wrapper {
+      width: 100%;
+      display: flex;
+      justify-content: center;
+    }
+
     .hero__btn {
       width: auto;
       min-width: 230px;
@@ -422,6 +662,10 @@
     .hero__btn-icon {
       width: 17px;
       height: 17px;
+    }
+
+    .hero__download-menu {
+      width: min(210px, calc(100vw - 24px));
     }
   }
 </style>
